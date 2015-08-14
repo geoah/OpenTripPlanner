@@ -11,6 +11,7 @@ import org.joda.time.DateTimeZone;
 import org.opentripplanner.analyst.ResultSet;
 import org.opentripplanner.analyst.SampleSet;
 import org.opentripplanner.analyst.TimeSurface;
+import org.opentripplanner.analyst.cluster.TaskStatistics;
 import org.opentripplanner.analyst.scenario.AddTripPattern;
 import org.opentripplanner.api.parameter.QualifiedModeSet;
 import org.opentripplanner.common.model.GenericLocation;
@@ -48,7 +49,7 @@ import java.util.Collections;
  */
 public class RepeatedRaptorProfileRouter {
 
-    private Logger LOG = LoggerFactory.getLogger(RepeatedRaptorProfileRouter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RepeatedRaptorProfileRouter.class);
 
     public static final int MAX_DURATION = 10 * 60 * 2; // seconds
 
@@ -65,6 +66,12 @@ public class RepeatedRaptorProfileRouter {
     /** If not null, completely skip this agency during the calculations. */
     public String banAgency = null;
 
+    /**
+     * Set this to already-created RaptorWorkerData to avoid having to build it
+     * If null it will be created.
+     */
+    public RaptorWorkerData raptorWorkerData;
+
     private ShortestPathTree walkOnlySpt;
 
     /** The sum of all earliest-arrival travel times to a given transit stop. Will be divided to create an average. */
@@ -80,7 +87,16 @@ public class RepeatedRaptorProfileRouter {
 
     /**
      * Make a router to use for making time surfaces only.
+     *
      * If you're building ResultSets, you should use the below method that uses a SampleSet; otherwise you maximum and average may not be correct.
+     *
+     * If you want isochrones, you should use this method, or use a sampleset that is very fine. The
+     * reason for this is that isochrones are interpolated from these points in Euclidean space, so the
+     * points need to be very fine. Consider the case of three roads in an equilateral triangle, the edges
+     * of which each take ten minutes to traverse. If you're standing at one vertex and want to go
+     * halfway down the opposite edge, it is a fifteen minute trip. However, interpolating between the
+     * vertices will not give fifteen minutes, it will give ten. The less granular your representation
+     * is, the worse this problem will be.
      */
     public RepeatedRaptorProfileRouter(Graph graph, ProfileRequest request) {
         this(graph, request, null);
@@ -104,33 +120,22 @@ public class RepeatedRaptorProfileRouter {
     }
 
     public void route () {
+        route(new TaskStatistics());
+    }
+
+    public void route (TaskStatistics ts) {
         long computationStartTime = System.currentTimeMillis();
         LOG.info("Begin profile request");
 
-        // assign indices for added transit stops
-        // note that they only need be unique in the context of this search.
-        // note also that there may be, before this search is over, vertices with higher indices (temp vertices)
-        // but they will not be transit stops.
-        if (request.scenario != null && request.scenario.modifications != null) {
-            for (AddTripPattern atp : Iterables
-                    .filter(request.scenario.modifications, AddTripPattern.class)) {
-                atp.materialize(graph);
-            }
-        }
-
         /** THIN WORKERS */
-        LOG.info("Make data...");
-
-        // convert from joda to java - ISO day of week with monday == 1
-        DayOfWeek dayOfWeek = DayOfWeek.of(request.date.getDayOfWeek());
-
-        TimeWindow window = new TimeWindow(request.fromTime, request.toTime + RaptorWorker.MAX_DURATION, graph.index.servicesRunning(request.date), dayOfWeek);
-
-        RaptorWorkerData raptorWorkerData;
-        if (sampleSet == null)
-            raptorWorkerData = new RaptorWorkerData(graph, window, request.scenario);
+        if (raptorWorkerData == null) {
+            long dataStart = System.currentTimeMillis();
+            raptorWorkerData = getRaptorWorkerData(request, graph, sampleSet, ts);
+            ts.raptorData = (int) (System.currentTimeMillis() - dataStart);
+        }
         else
-            raptorWorkerData = new RaptorWorkerData(graph, window, request.scenario, sampleSet);
+            ts.raptorData = 0;
+
         LOG.info("Done.");
         // TEST SERIALIZED SIZE and SPEED
         //        try {
@@ -142,11 +147,10 @@ public class RepeatedRaptorProfileRouter {
         //        } catch(IOException i) {
         //            i.printStackTrace();
         //        }
-        
+
+        long initialStopStart = System.currentTimeMillis();
         LOG.info("Finding initial stops");
-
         TIntIntMap accessTimes = findInitialStops(false, raptorWorkerData);
-
         LOG.info("Found {} initial transit stops", accessTimes.size());
 
         int[] timesAtVertices = new int[Vertex.getMaxIndex()];
@@ -164,7 +168,10 @@ public class RepeatedRaptorProfileRouter {
                 timesAtVertices[vidx] = time;
 
         }
+        ts.initialStopSearch = (int) (System.currentTimeMillis() - initialStopStart);
+        ts.initialStopCount = accessTimes.size();
 
+        long walkSearchStart = System.currentTimeMillis();
         // An array containing the time needed to walk to each target from the origin point.
         int[] walkTimes;
 
@@ -174,9 +181,14 @@ public class RepeatedRaptorProfileRouter {
         else {
             walkTimes = sampleSet.eval(timesAtVertices);
         }
+        ts.walkSearch = (int) (System.currentTimeMillis() - walkSearchStart);
 
         RaptorWorker worker = new RaptorWorker(raptorWorkerData, request);
-        propagatedTimesStore = worker.runRaptor(graph, accessTimes, walkTimes);
+        propagatedTimesStore = worker.runRaptor(graph, accessTimes, walkTimes, ts);
+
+        for (int min : propagatedTimesStore.mins) {
+            if (min != RaptorWorker.UNREACHED) ts.targetsReached++;
+        }
 
         if (sampleSet == null) {
             timeSurfaceRangeSet = new TimeSurface.RangeSet();
@@ -185,8 +197,8 @@ public class RepeatedRaptorProfileRouter {
             timeSurfaceRangeSet.max = new TimeSurface(this);
             propagatedTimesStore.makeSurfaces(timeSurfaceRangeSet);
         }
-
-        LOG.info("Profile request finished in {} seconds", (System.currentTimeMillis() - computationStartTime) / 1000.0);
+        ts.compute = (int) (System.currentTimeMillis() - computationStartTime);
+        LOG.info("Profile request finished in {} seconds", (ts.compute) / 1000.0);
     }
 
     private TIntIntMap findInitialStops (boolean dest, RaptorWorkerData data) {
@@ -248,5 +260,41 @@ public class RepeatedRaptorProfileRouter {
      */
     public ResultSet.RangeSet makeResults (boolean includeTimes, boolean includeHistograms, boolean includeIsochrones) {
         return propagatedTimesStore.makeResults(sampleSet, includeTimes, includeHistograms, includeIsochrones);
+    }
+
+    /** Create RAPTOR worker data from a graph, profile request and sample set (the last of which may be null */
+    public static RaptorWorkerData getRaptorWorkerData (ProfileRequest request, Graph graph, SampleSet sampleSet, TaskStatistics ts) {
+        LOG.info("Make data...");
+        long startData = System.currentTimeMillis();
+
+        // assign indices for added transit stops
+        // note that they only need be unique in the context of this search.
+        // note also that there may be, before this search is over, vertices with higher indices (temp vertices)
+        // but they will not be transit stops.
+        if (request.scenario != null && request.scenario.modifications != null) {
+            for (AddTripPattern atp : Iterables
+                    .filter(request.scenario.modifications, AddTripPattern.class)) {
+                atp.materialize(graph);
+            }
+        }
+
+        // convert from joda to java - ISO day of week with monday == 1
+        DayOfWeek dayOfWeek = DayOfWeek.of(request.date.getDayOfWeek());
+
+        TimeWindow window = new TimeWindow(request.fromTime, request.toTime + RaptorWorker.MAX_DURATION,
+                graph.index.servicesRunning(request.date), dayOfWeek);
+
+        RaptorWorkerData raptorWorkerData;
+        if (sampleSet == null)
+            raptorWorkerData = new RaptorWorkerData(graph, window, request, ts);
+        else
+            raptorWorkerData = new RaptorWorkerData(graph, window, request, sampleSet,
+                    ts);
+
+        ts.raptorData = (int) (System.currentTimeMillis() - startData);
+
+        LOG.info("done");
+
+        return raptorWorkerData;
     }
 }
