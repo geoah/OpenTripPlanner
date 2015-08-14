@@ -65,7 +65,7 @@ public class TransportNetwork implements Serializable {
 
     public static void main (String[] args) {
 
-        // Load OSM data
+        // Load OSM data TODO load in a thread so OSM and GTFS are loaded in parallel
         String osmSourceFile = args[0];
         OSM osm = new OSM(null);
         osm.intersectionDetection = true;
@@ -78,6 +78,8 @@ public class TransportNetwork implements Serializable {
         // Load transit data
         String gtfsSourceFile = args[1];
         TransitLayer transitLayer = TransitLayer.fromGtfs(gtfsSourceFile, streetLayer);
+
+        // TODO link as a separate step from loading transit, to avoid passing in streetLayer
 
         // Must build edge lists after all inter-layer linking has occurred.
         streetLayer.buildEdgeLists();
