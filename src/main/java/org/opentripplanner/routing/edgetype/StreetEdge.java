@@ -356,11 +356,11 @@ public class StreetEdge extends Edge implements Cloneable {
 
         if (options.indoor) {
           if (isIndoor()) {
-            weight *= 0.5
+            weight *= 0.5;
           }
         } else {
           if (isIndoor()) {
-            weight *= 2
+            weight *= 2;
           }
         }
 
