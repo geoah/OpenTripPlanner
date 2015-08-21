@@ -36,6 +36,8 @@ public class ElevatorHopEdge extends Edge implements ElevatorEdge {
 
     public boolean wheelchairAccessible = true;
 
+    public boolean indoor = false;
+
     public ElevatorHopEdge(Vertex from, Vertex to, StreetTraversalPermission permission) {
         super(from, to);
         this.permission = permission;

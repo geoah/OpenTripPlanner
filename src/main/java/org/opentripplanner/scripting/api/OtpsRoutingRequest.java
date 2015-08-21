@@ -95,6 +95,10 @@ public class OtpsRoutingRequest {
         req.wheelchairAccessible = wheelchairAccessible;
     }
 
+    public void setIndoor(boolean indoor) {
+        req.indoor = indoor;
+    }
+
     public void setClampInitialWait(long clampInitialWait) {
         req.clampInitialWait = clampInitialWait;
     }

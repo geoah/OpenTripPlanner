@@ -84,6 +84,7 @@ public class StreetEdge extends Edge implements Cloneable {
     private static final int STAIRS_FLAG_INDEX = 4;
     private static final int SLOPEOVERRIDE_FLAG_INDEX = 5;
     private static final int WHEELCHAIR_ACCESSIBLE_FLAG_INDEX = 6;
+    private static final int INDOOR = 7;
 
     /** back, roundabout, stairs, ... */
     private byte flags;
@@ -137,6 +138,7 @@ public class StreetEdge extends Edge implements Cloneable {
         this.setPermission(permission);
         this.setCarSpeed(DEFAULT_CAR_SPEED);
         this.setWheelchairAccessible(true); // accessible by default
+        this.setIndoor(false); // Outdoor by default
         if (geometry != null) {
             try {
                 for (Coordinate c : geometry.getCoordinates()) {
@@ -350,6 +352,16 @@ public class StreetEdge extends Edge implements Cloneable {
                 }
                 */
             }
+        }
+
+        if (options.indoor) {
+          if (isIndoor()) {
+            weight *= 0.5
+          }
+        } else {
+          if (isIndoor()) {
+            weight *= 2
+          }
         }
 
         if (isStairs()) {
@@ -619,6 +631,14 @@ public class StreetEdge extends Edge implements Cloneable {
         flags = BitSetUtils.set(flags, WHEELCHAIR_ACCESSIBLE_FLAG_INDEX, wheelchairAccessible);
 	}
 
+	public boolean isIndoor() {
+		return BitSetUtils.get(flags, INDOOR);
+	}
+
+	public void setIndoor(boolean indoor) {
+        flags = BitSetUtils.set(flags, INDOOR, indoor);
+	}
+
 	public StreetTraversalPermission getPermission() {
 		return permission;
 	}
@@ -769,6 +789,7 @@ public class StreetEdge extends Edge implements Cloneable {
             e.setStairs(isStairs());
             e.setWheelchairAccessible(isWheelchairAccessible());
             e.setBack(isBack());
+            e.setIndoor(isIndoor());
         }
 
         return new P2<StreetEdge>(e1, e2);

@@ -26,6 +26,11 @@ public class TraversalRequirements {
     private boolean wheelchairAccessible = false;
 
     /**
+     * If true, trip must prefer indoor streets.
+     */
+    private boolean indoor = false;
+
+    /**
      * The maximum slope of streets for wheelchair trips.
      * 
      * ADA max wheelchair ramp slope is a good default.
@@ -77,6 +82,7 @@ public class TraversalRequirements {
     private static void initFromRoutingRequest(TraversalRequirements req, RoutingRequest options) {
         req.modes = options.modes.clone();
         req.wheelchairAccessible = options.wheelchairAccessible;
+        req.indoor = options.indoor;
         req.maxWheelchairSlope = options.maxSlope;
         req.maxWalkDistance = options.maxWalkDistance;
     }

@@ -24,6 +24,7 @@ import org.opentripplanner.util.NonLocalizedString;
  */
 public class StreetLocation extends StreetVertex {
     private boolean wheelchairAccessible;
+    private boolean indoor;
 
     // maybe name should just be pulled from street being split
     public StreetLocation(String id, Coordinate nearestPoint, I18NString name) {
@@ -45,6 +46,14 @@ public class StreetLocation extends StreetVertex {
 
     public boolean isWheelchairAccessible() {
         return wheelchairAccessible;
+    }
+
+    public void setIndoor(boolean indoor) {
+        this.indoor = indoor;
+    }
+
+    public boolean isIndoor() {
+        return indoor;
     }
 
     public boolean equals(Object o) {

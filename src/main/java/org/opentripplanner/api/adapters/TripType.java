@@ -101,6 +101,10 @@ public class TripType {
 
     @XmlAttribute
     @JsonSerialize
+    Integer indoor;
+
+    @XmlAttribute
+    @JsonSerialize
     Integer tripBikesAllowed;
     
     @XmlAttribute

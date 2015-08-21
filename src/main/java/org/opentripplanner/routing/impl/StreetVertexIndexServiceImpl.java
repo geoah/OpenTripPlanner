@@ -125,6 +125,7 @@ public class StreetVertexIndexServiceImpl implements StreetVertexIndexService {
     public static TemporaryStreetLocation createTemporaryStreetLocation(Graph graph, String label,
             I18NString name, Iterable<StreetEdge> edges, Coordinate nearestPoint, boolean endVertex) {
         boolean wheelchairAccessible = false;
+        boolean indoor = false;
 
         TemporaryStreetLocation location = new TemporaryStreetLocation(label, nearestPoint, name,
                 endVertex);
@@ -132,6 +133,7 @@ public class StreetVertexIndexServiceImpl implements StreetVertexIndexService {
             Vertex fromv = street.getFromVertex();
             Vertex tov = street.getToVertex();
             wheelchairAccessible |= ((StreetEdge) street).isWheelchairAccessible();
+            indoor |= ((StreetEdge) street).isIndoor();
             /* forward edges and vertices */
             Vertex edgeLocation;
             if (SphericalDistanceLibrary.distance(nearestPoint, fromv.getCoordinate()) < 1) {
@@ -162,6 +164,7 @@ public class StreetVertexIndexServiceImpl implements StreetVertexIndexService {
             }
         }
         location.setWheelchairAccessible(wheelchairAccessible);
+        location.setIndoor(indoor);
         return location;
 
     }

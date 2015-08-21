@@ -396,6 +396,10 @@ public class WalkableAreaBuilder {
                 street.setWheelchairAccessible(false);
             }
 
+            if (areaEntity.isTagTrue("indoor")) {
+                street.setIndoor(true);
+            }
+
             street.setStreetClass(cls);
             edges.add(street);
 
@@ -413,6 +417,10 @@ public class WalkableAreaBuilder {
 
             if (areaEntity.isTagFalse("wheelchair")) {
                 street.setWheelchairAccessible(false);
+            }
+
+            if (areaEntity.isTagTrue("indoor")) {
+                street.setIndoor(false);
             }
 
             backStreet.setStreetClass(cls);

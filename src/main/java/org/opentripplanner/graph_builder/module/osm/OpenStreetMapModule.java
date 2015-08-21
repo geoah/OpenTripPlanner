@@ -773,6 +773,7 @@ public class OpenStreetMapModule implements GraphBuilderModule {
 
                     // default permissions: pedestrian, wheelchair, and bicycle
                     boolean wheelchairAccessible = true;
+                    boolean indoor = false;
                     StreetTraversalPermission permission = StreetTraversalPermission.PEDESTRIAN_AND_BICYCLE;
                     // check for bicycle=no, otherwise assume it's OK to take a bike
                     if (node.isTagFalse("bicycle")) {
@@ -782,6 +783,9 @@ public class OpenStreetMapModule implements GraphBuilderModule {
                     if (node.isTagFalse("wheelchair")) {
                         wheelchairAccessible = false;
                     }
+                    if (node.isTagTrue("indoor")) {
+                        indoor = true;
+                    }
 
                     // The narrative won't be strictly correct, as it will show the elevator as part
                     // of the cycling leg, but I think most cyclists will figure out that they
@@ -790,6 +794,8 @@ public class OpenStreetMapModule implements GraphBuilderModule {
                     ElevatorHopEdge backEdge = new ElevatorHopEdge(to, from, permission);
                     foreEdge.wheelchairAccessible = wheelchairAccessible;
                     backEdge.wheelchairAccessible = wheelchairAccessible;
+                    foreEdge.indoor = indoor;
+                    backEdge.indoor = indoor;
                 }
             } // END elevator edge loop
         }
@@ -1077,6 +1083,10 @@ public class OpenStreetMapModule implements GraphBuilderModule {
             if (!ignoreWheelchairAccessibility
                     && (way.isTagFalse("wheelchair") || (steps && !way.isTagTrue("wheelchair")))) {
                 street.setWheelchairAccessible(false);
+            }
+
+            if (way.isTagFalse("indoor")) {
+                street.setIndoor(true);
             }
 
             street.setSlopeOverride(wayPropertySet.getSlopeOverride(way));

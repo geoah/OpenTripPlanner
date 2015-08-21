@@ -37,6 +37,8 @@ public class TransferEdge extends Edge {
 
     private boolean wheelchairAccessible = true;
 
+    private boolean indoor = false;
+
     /**
      * @see Transfer(Vertex, Vertex, double, int)
      */
@@ -102,6 +104,10 @@ public class TransferEdge extends Edge {
 
     public void setWheelchairAccessible(boolean wheelchairAccessible) {
         this.wheelchairAccessible = wheelchairAccessible;
+    }
+
+    public void setIndoor(boolean indoor) {
+        this.indoor = indoor;
     }
 
     public boolean isWheelchairAccessible() {

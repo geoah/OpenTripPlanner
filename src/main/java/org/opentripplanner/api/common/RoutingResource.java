@@ -90,6 +90,10 @@ public abstract class RoutingResource {
     @QueryParam("wheelchair")
     protected Boolean wheelchair;
 
+    /** Whether the trip must prefer indoor streets. */
+    @QueryParam("indoor")
+    protected Boolean indoor;
+
     /** The maximum distance (in meters) the user is willing to walk. Defaults to unlimited. */
     @QueryParam("maxWalkDistance")
     protected Double maxWalkDistance;
@@ -401,6 +405,9 @@ public abstract class RoutingResource {
 
         if (wheelchair != null)
             request.setWheelchairAccessible(wheelchair);
+
+        if (indoor != null)
+            request.setIndoor(indoor);
 
         if (numItineraries != null)
             request.setNumItineraries(numItineraries);
