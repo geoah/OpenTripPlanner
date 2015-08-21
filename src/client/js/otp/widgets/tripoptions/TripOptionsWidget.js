@@ -451,6 +451,48 @@ otp.widgets.tripoptions.WheelChairSelector =
     }
 });
 
+//** IndoorSelector **//
+
+otp.widgets.tripoptions.IndoorSelector =
+    otp.Class(otp.widgets.tripoptions.TripOptionsWidgetControl, {
+
+    id           :  null,
+    //TRANSLATORS: label for checkbox
+    label        : _tr("Indoor/Outdoor preference:"),
+
+    initialize : function(tripWidget) {
+
+        otp.widgets.tripoptions.TripOptionsWidgetControl.prototype.initialize.apply(this, arguments);
+
+        this.id = tripWidget.id;
+
+
+        ich['otp-tripOptions-indoor']({
+            widgetId : this.id,
+            label : this.label,
+        }).appendTo(this.$());
+
+    },
+
+    doAfterLayout : function() {
+        var this_ = this;
+
+        $("#"+this.id+"-indoor-input").change(function() {
+            this_.tripWidget.module.indoor = this.checked;
+        });
+    },
+
+    restorePlan : function(data) {
+        if(data.queryParams.indoor) {
+            $("#"+this.id+"-indoor-input").prop("checked", data.queryParams.indoor);
+        }
+    },
+
+    isApplicableForMode : function(mode) {
+        return true;
+    }
+});
+
 
 //** ModeSelector **//
 
