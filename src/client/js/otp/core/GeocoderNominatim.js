@@ -16,7 +16,7 @@ otp.namespace("otp.core");
  
 otp.core.GeocoderNominatim = otp.Class({
  
-     url: '/nominatim/search.php?format=json',
+     url: window.location.protocol+'//'+window.location.hostname+'/nominatim/search.php?format=json',
  
     initialize : function(url, addressParam) {
         // Do nothing, the proper address and query param are already known.
