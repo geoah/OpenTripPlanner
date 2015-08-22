@@ -21,7 +21,7 @@ otp.modules.planner.defaultQueryParams = {
     date                            : moment().format(otp.config.locale.time.date_format),
     arriveBy                        : false,
     wheelchair                      : false,
-    indoor                          : true,
+    indoor                          : 0,
     mode                            : "TRANSIT,WALK",
     maxWalkDistance                 : 804.672, // 1/2 mi.
     metricDefaultMaxWalkDistance    : 750, // meters

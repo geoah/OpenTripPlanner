@@ -477,7 +477,7 @@ otp.widgets.tripoptions.IndoorSelector =
     doAfterLayout : function() {
         var this_ = this;
 
-        $("#"+this.id+"-indoor-input").select(function() {
+        $("#"+this.id+"-indoor-input").change(function() {
             this_.tripWidget.module.indoor = $("#"+this.id+"-indoor-input").val();
         });
     },
