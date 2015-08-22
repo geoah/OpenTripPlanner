@@ -1085,7 +1085,7 @@ public class OpenStreetMapModule implements GraphBuilderModule {
                 street.setWheelchairAccessible(false);
             }
 
-            if (way.isTagFalse("indoor")) {
+            if (way.isTagTrue("indoor")) {
                 street.setIndoor(true);
             }
 
