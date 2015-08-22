@@ -44,7 +44,7 @@ otp.config = {
     /**
      * The OTP web service locations
      */
-    hostname : "",
+    hostname : "http://192.168.56.3:8080",
     //municoderHostname : "http://localhost:8080",
     //datastoreUrl : 'http://localhost:9000',
     // In the 0.10.x API the base path is "otp-rest-servlet/ws"
@@ -163,9 +163,10 @@ otp.config = {
 
     geocoders : [
         {
-            name: 'OTP built-in geocoder',
-            className: 'otp.core.GeocoderBuiltin'
-            // URL and query parameter do not need to be set for built-in geocoder.
+            name: 'Nominatim',
+            className: 'otp.core.GeocoderNominatim',
+            url: '/nominatim/search.php?format=json',
+            addressParam: 'q'
         }
     ],
 
