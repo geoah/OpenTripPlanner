@@ -478,7 +478,7 @@ otp.widgets.tripoptions.IndoorSelector =
         var this_ = this;
 
         $("#"+this.id+"-indoor-input").change(function() {
-            this_.tripWidget.module.indoor = $("#"+this.id+"-indoor-input").val();
+            this_.tripWidget.module.indoor = $("#"+this_.id+"-indoor-input").val();
         });
     },
 
