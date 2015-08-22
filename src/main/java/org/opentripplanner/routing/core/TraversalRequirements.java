@@ -28,7 +28,7 @@ public class TraversalRequirements {
     /**
      * If true, trip must prefer indoor streets.
      */
-    private boolean indoor = false;
+    private int indoor = 0;
 
     /**
      * The maximum slope of streets for wheelchair trips.

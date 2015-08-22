@@ -92,7 +92,7 @@ public abstract class RoutingResource {
 
     /** Whether the trip must prefer indoor streets. */
     @QueryParam("indoor")
-    protected Boolean indoor;
+    protected Integer indoor;
 
     /** The maximum distance (in meters) the user is willing to walk. Defaults to unlimited. */
     @QueryParam("maxWalkDistance")

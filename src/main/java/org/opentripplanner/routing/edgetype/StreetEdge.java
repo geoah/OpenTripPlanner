@@ -354,14 +354,14 @@ public class StreetEdge extends Edge implements Cloneable {
             }
         }
 
-        if (options.indoor) {
+        if (options.indoor == 1) {
           if (isIndoor()) {
             weight *= 0.5;
             System.out.println("Wanted indoor, WAS indoor.");
           } else {
             System.out.println("Wanted indoor, wasn't indoor.");
           }
-        } else {
+        } else if (options.indoor == 2) {
           if (isIndoor()) {
             weight *= 2;
             System.out.println("Didn't want indoor, WAS indoor.");

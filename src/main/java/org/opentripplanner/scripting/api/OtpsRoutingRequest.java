@@ -95,7 +95,7 @@ public class OtpsRoutingRequest {
         req.wheelchairAccessible = wheelchairAccessible;
     }
 
-    public void setIndoor(boolean indoor) {
+    public void setIndoor(int indoor) {
         req.indoor = indoor;
     }
 

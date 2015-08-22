@@ -113,7 +113,7 @@ public class RoutingRequest implements Cloneable, Serializable {
     public boolean wheelchairAccessible = false;
 
     /** Whether the trip should prefer indoor streets. */
-    public boolean indoor = false;
+    public int indoor = 0;
 
     /** The maximum number of itineraries to return. */
     public int numItineraries = 3;
@@ -518,7 +518,7 @@ public class RoutingRequest implements Cloneable, Serializable {
         this.wheelchairAccessible = wheelchairAccessible;
     }
 
-    public void setIndoor(boolean indoor) {
+    public void setIndoor(int indoor) {
         this.indoor = indoor;
     }
 
@@ -937,7 +937,7 @@ public class RoutingRequest implements Cloneable, Serializable {
                 + new Double(carSpeed).hashCode() + new Double(maxWeight).hashCode()
                 + (int) (worstTime & 0xffffffff) + modes.hashCode()
                 + (arriveBy ? 8966786 : 0) + (wheelchairAccessible ? 731980 : 0)
-                + (indoor ? 11027 : 0)
+                + (int) indoor + (int) indoor * 11027
                 + optimize.hashCode() + new Double(maxWalkDistance).hashCode()
                 + new Double(transferPenalty).hashCode() + new Double(maxSlope).hashCode()
                 + new Double(walkReluctance).hashCode() + new Double(waitReluctance).hashCode()

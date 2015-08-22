@@ -477,14 +477,14 @@ otp.widgets.tripoptions.IndoorSelector =
     doAfterLayout : function() {
         var this_ = this;
 
-        $("#"+this.id+"-indoor-input").change(function() {
-            this_.tripWidget.module.indoor = this.checked;
+        $("#"+this.id+"-indoor-input").select(function() {
+            this_.tripWidget.module.indoor = $("#"+this.id+"-indoor-input").val();
         });
     },
 
     restorePlan : function(data) {
         if(data.queryParams.indoor) {
-            $("#"+this.id+"-indoor-input").prop("checked", data.queryParams.indoor);
+            $("#"+this.id+"-indoor-input").val(data.queryParams.indoor);
         }
     },
 
